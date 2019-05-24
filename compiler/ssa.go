@@ -2,18 +2,17 @@ package compiler
 
 import (
 	"fmt"
-
 	"math"
+	"strings"
 
 	"github.com/go-interpreter/wagon/disasm"
 	"github.com/go-interpreter/wagon/wasm"
-	"strings"
 )
 
 type TyValueID uint64
 
 // SSAFunctionCompiler represents a compiler which translates a WebAssembly modules
-// intepreted code into a Static-Single-Assignment-based intermediate representation.
+// interpreted code into a Static-Single-Assignment-based intermediate representation.
 type SSAFunctionCompiler struct {
 	Module *wasm.Module
 	Source *disasm.Disassembly
@@ -46,7 +45,7 @@ type FixupInfo struct {
 	TablePos int
 }
 
-// Instr denotes a single instrution.
+// Instr denotes a single instruction.
 type Instr struct {
 	Target TyValueID // the value id we are assigning to
 
@@ -56,7 +55,7 @@ type Instr struct {
 }
 
 // NewSSAFunctionCompiler instantiates a compiler which translates a WebAssembly modules
-// intepreted code into a Static-Single-Assignment-based intermediate representation.
+// interpreted code into a Static-Single-Assignment-based intermediate representation.
 func NewSSAFunctionCompiler(m *wasm.Module, d *disasm.Disassembly) *SSAFunctionCompiler {
 	return &SSAFunctionCompiler{
 		Module:         m,

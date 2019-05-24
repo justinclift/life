@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/perlin-network/life/exec"
 	"io/ioutil"
+
+	"github.com/perlin-network/life/exec"
 )
 
 func main() {

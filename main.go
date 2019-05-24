@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/perlin-network/life/exec"
-	"github.com/perlin-network/life/platform"
 	"io/ioutil"
 	"strconv"
 	"time"
+
+	"github.com/perlin-network/life/exec"
+	"github.com/perlin-network/life/platform"
 )
 
 // Resolver defines imports for WebAssembly modules ran in Life.
