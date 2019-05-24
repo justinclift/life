@@ -4,5 +4,8 @@ replace github.com/go-interpreter/wagon v0.0.0 => github.com/perlin-network/wago
 
 require (
 	github.com/go-interpreter/wagon v0.0.0
-	golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e // indirect
+	github.com/jackc/pgx v3.4.0+incompatible
+	github.com/pkg/errors v0.8.1 // indirect
+	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f // indirect
+	golang.org/x/text v0.3.2 // indirect
 )

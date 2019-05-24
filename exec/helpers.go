@@ -2,8 +2,8 @@ package exec
 
 import (
 	"errors"
-
 	"fmt"
+
 	"github.com/perlin-network/life/compiler"
 	"github.com/perlin-network/life/utils"
 )
@@ -77,6 +77,21 @@ func (vm *VirtualMachine) Run(entryID int, params ...int64) (retVal int64, retEr
 			return int64(vm.AOTService.UnsafeInvokeFunction_2(vm, targetName, uint64(params[0]), uint64(params[1]))), nil
 		default:
 		}
+	}
+
+	// Begin a PostgreSQL transaction
+	if vm.Config.DoOpLogging {
+		var err error
+		vm.PgTx, err = vm.pg.Begin()
+		if err != nil {
+			panic(err)
+		}
+		defer func() {
+			err = vm.PgTx.Commit() // Set up an automatic transaction commit
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 
 	for !vm.Exited {
