@@ -2036,7 +2036,7 @@ func (vm *VirtualMachine) Execute() {
 
 		case opcodes.AddGas:
 			delta := LE.Uint64(frame.Code[frame.IP : frame.IP+8])
-			opLog(vm, ins, "add gas", []string{"frame_ip", "before_val_int", "modifier_value", "after_val_int"},
+			opLog(vm, ins, "add gas", []string{"frame_ip", "base_value", "modifier_value", "result_value"},
 				[]interface{}{frame.IP, vm.Gas, delta, vm.Gas + delta})
 			frame.IP += 8
 			if !vm.AddAndCheckGas(delta) {
