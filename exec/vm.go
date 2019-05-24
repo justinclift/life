@@ -2107,7 +2107,7 @@ func opLog(vm *VirtualMachine, opCode opcodes.Opcode, opName string, fields []st
 
 	// Commit every 10k inserts, so quitting via Ctrl+C keeps the info thus far
 	if (opNum % 10000) == 0 {
-		err = vm.PgTx.Commit() // Set up an automatic transaction commit
+		err = vm.PgTx.Commit()
 		if err != nil {
 			panic(err)
 		}
