@@ -3,6 +3,7 @@ module github.com/perlin-network/life
 replace github.com/go-interpreter/wagon v0.0.0 => github.com/perlin-network/wagon v0.3.1-0.20180825141017-f8cb99b55a39
 
 require (
+	github.com/go-delve/delve v1.2.0 // indirect
 	github.com/go-interpreter/wagon v0.0.0
 	github.com/jackc/pgx v3.4.0+incompatible
 	github.com/pkg/errors v0.8.1 // indirect
