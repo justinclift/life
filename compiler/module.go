@@ -34,9 +34,9 @@ type InterpreterCode struct {
 }
 
 func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
-	reader := bytes.NewReader(raw)
+	rdr := bytes.NewReader(raw)
 
-	m, err := wasm.ReadModule(reader, nil)
+	m, err := wasm.ReadModule(rdr, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +86,41 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	foo := dwr.New(d)
-	fmt.Printf("%v", foo)
+	reader := dwr.New(d)
+
+	// Read through the DWARF data
+	for entry, err := reader.Next(); entry != nil; entry, err = reader.Next() {
+		if err != nil {
+			panic(err)
+		}
+
+		// Display the human readable name for the entry
+		fmt.Println(entry.Tag.String())
+		//fmt.Println(entry.Tag.GoString())
+
+		//switch entry.Tag {
+		//case dwarf.TagCompileUnit:
+		//	fmt.Println("Compile Unit")
+		//case dwarf.TagPartialUnit:
+		//	fmt.Println("Partial Unit")
+		//case dwarf.TagImportedUnit:
+		//	fmt.Println("Imported Unit")
+		//case dwarf.TagArrayType:
+		//	fmt.Println("Array Type")
+		//case dwarf.TagBaseType:
+		//	fmt.Println("Base Type")
+		//case dwarf.TagClassType:
+		//	fmt.Println("Class Type")
+		//case dwarf.TagStructType:
+		//	fmt.Println("Struct Type")
+		//case dwarf.TagVariable:
+		//	fmt.Println("Variable")
+		//case dwarf.TagConstant:
+		//	fmt.Println("Constant")
+		//case dwarf.TagSubprogram:
+		//	fmt.Println("Subprogram")
+		//}
+	}
 
 	return &Module{
 		Base:          m,
