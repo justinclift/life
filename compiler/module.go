@@ -88,6 +88,9 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 	}
 	reader := dwr.New(d)
 
+	var compiler, fileName string
+	var cuRanges [][2]uint64
+
 	// Read through the DWARF data
 	for tag, err := reader.Next(); tag != nil; tag, err = reader.Next() {
 		if err != nil {
@@ -97,16 +100,41 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 		// Info on DWARF 4 fields:
 		//   https://github.com/golang/go/blob/d97bd5d07ac4e7b342053b335428ff9c97212f9f/src/debug/dwarf/entry.go#L217-L244
 
-		// Display the human readable name for the tag
-		fmt.Println(tag.Tag.String())
+		switch tag.Tag {
+		case dwarf.TagCompileUnit:
 
-		// Display each of the attributes for the DWARF tags
-		for i, j := range tag.Field {
-			fmt.Printf("  * Attribute %d - Attr: '%v'  Class: '%v'  Value: '%v'\n", i, j.Attr, j.Class, j.Val)
+			// Store the compiler name (eg "TinyGo") and name of the main compiled .go file
+			compiler = tag.Val(dwarf.AttrProducer).(string)
+			fileName = tag.Val(dwarf.AttrName).(string)
+
+			// Grab the Program Counter ranges in this compile unit
+			cuRanges, err = d.Ranges(tag)
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Printf("Original filename: %s\n", fileName)
+			fmt.Printf("Compiled using: %s\n", compiler)
+			if len(cuRanges) > 0 {
+				fmt.Printf("Number of ranges: %d\n", len(cuRanges))
+				for _, j := range cuRanges {
+					fmt.Printf("  * Low: %v  High: %v\n", j[0], j[1])
+				}
+			}
+
+		default:
+			// Display the human readable name for the DWARF tag
+			fmt.Println(tag.Tag.String())
+
+			// Display each of the attributes for the DWARF tags
+			for i, j := range tag.Field {
+				fmt.Printf("  * Attribute %d - Attr: '%v'  Class: '%v'  Value: '%v'\n", i, j.Attr, j.Class, j.Val)
+			}
 		}
+
 		fmt.Println()
 
-		//switch entry.Tag {
+		//switch tag.Tag {
 		//case dwarf.TagCompileUnit:
 		//	fmt.Println("Compile Unit")
 		//case dwarf.TagPartialUnit:
