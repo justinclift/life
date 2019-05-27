@@ -89,14 +89,22 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 	reader := dwr.New(d)
 
 	// Read through the DWARF data
-	for entry, err := reader.Next(); entry != nil; entry, err = reader.Next() {
+	for tag, err := reader.Next(); tag != nil; tag, err = reader.Next() {
 		if err != nil {
 			panic(err)
 		}
 
-		// Display the human readable name for the entry
-		fmt.Println(entry.Tag.String())
-		//fmt.Println(entry.Tag.GoString())
+		// Info on DWARF 4 fields:
+		//   https://github.com/golang/go/blob/d97bd5d07ac4e7b342053b335428ff9c97212f9f/src/debug/dwarf/entry.go#L217-L244
+
+		// Display the human readable name for the tag
+		fmt.Println(tag.Tag.String())
+
+		// Display each of the attributes for the DWARF tags
+		for i, j := range tag.Field {
+			fmt.Printf("  * Attribute %d - Attr: '%v'  Class: '%v'  Value: '%v'\n", i, j.Attr, j.Class, j.Val)
+		}
+		fmt.Println()
 
 		//switch entry.Tag {
 		//case dwarf.TagCompileUnit:
