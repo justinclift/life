@@ -122,6 +122,36 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 				}
 			}
 
+			// Read the line entries from this compile unit
+			//type LineInfo struct {
+			//	lineNum int
+			//	colNum  int
+			//}
+			//sourceFileLines := make(map[string]LineInfo)
+			lines, err := d.LineReader(tag)
+			if err != nil {
+				panic(err)
+			}
+			var lEntry dwarf.LineEntry
+			i := 0
+			for {
+				err = lines.Next(&lEntry)
+				if err != nil {
+					break
+				}
+				fmt.Printf("Entry %d\n", i)
+				fmt.Printf("  * File: %v\n", lEntry.File.Name)
+				fmt.Printf("  * Address: %v\n", lEntry.Address)
+				fmt.Printf("  * Basic Block: %v\n", lEntry.BasicBlock)
+				fmt.Printf("  * Is Statement: %v\n", lEntry.IsStmt)
+				fmt.Printf("  * Line: %v\n", lEntry.Line)
+				fmt.Printf("  * Column: %v\n", lEntry.Column)
+				fmt.Printf("  * Prologue End: %v\n", lEntry.PrologueEnd)
+				fmt.Printf("  * Epilogue Begin: %v\n", lEntry.EpilogueBegin)
+				fmt.Printf("  * End Sequence: %v\n", lEntry.EndSequence)
+				i++
+			}
+
 		default:
 			// Display the human readable name for the DWARF tag
 			fmt.Println(tag.Tag.String())
