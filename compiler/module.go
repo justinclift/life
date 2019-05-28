@@ -92,6 +92,7 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 	var cuRanges [][2]uint64
 
 	// Read through the DWARF data
+outer:
 	for tag, err := reader.Next(); tag != nil; tag, err = reader.Next() {
 		if err != nil {
 			panic(err)
@@ -113,15 +114,33 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 				panic(err)
 			}
 
-			fmt.Printf("Original filename: %s\n", fileName)
-			fmt.Printf("Compiled using: %s\n", compiler)
+			fmt.Print("Compile unit")
+
+			if fileName != "" {
+				fmt.Printf("  * Original filename: %s\n", fileName)
+			}
+			if compiler != "" {
+				fmt.Printf("  * Compiled using: %s\n", compiler)
+			}
+			compileDir, ok := tag.Val(dwarf.AttrCompDir).(string)
+			if ok {
+				fmt.Printf("  * Compile dir: %s\n", compileDir)
+			}
+			lineInfoOffset, ok := tag.Val(dwarf.AttrStmtList).(int64)
+			if ok {
+				fmt.Printf("  * Line info offset: %v\n", lineInfoOffset)
+			}
+
 			if len(cuRanges) > 0 {
-				fmt.Printf("Number of ranges: %d\n", len(cuRanges))
+				fmt.Printf("  * Number of ranges: %d\n", len(cuRanges))
 				for _, j := range cuRanges {
-					fmt.Printf("  * Low: %v  High: %v\n", j[0], j[1])
+					fmt.Printf("    * Low: %v  High: %v\n", j[0], j[1])
 				}
 			}
 
+			for i, j := range tag.Field {
+				fmt.Printf("    * Attribute %d - Attr: '%v'  Class: '%v'  Value: '%v'\n", i, j.Attr, j.Class, j.Val)
+			}
 			// Read the line entries from this compile unit
 			//type LineInfo struct {
 			//	lineNum int
@@ -168,6 +187,50 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 					fmt.Printf("  * Low: %v  High: %v\n", j[0], j[1])
 				}
 			}
+
+			if tag.Children {
+				abstractOriginNameTable := make(map[dwarf.Offset]string)
+				fmt.Print("  * Has children")
+				ok1 := false
+				//
+				for {
+
+					tag, err = reader.Next()
+					if err != nil {
+						break outer
+					}
+					if tag.Tag == 0 {
+						break
+					}
+					if tag.Tag == dwarf.TagInlinedSubroutine {
+						originOffset := tag.Val(dwarf.AttrAbstractOrigin).(dwarf.Offset)
+						name := abstractOriginNameTable[originOffset]
+						fmt.Printf("Name: %v\n", name)
+						if ranges, _ := d.Ranges(tag); len(ranges) == 1 {
+							ok1 = true
+							// lowpc = ranges[0][0]
+							// highpc = ranges[0][1]
+						}
+						callfileidx, ok1 := tag.Val(dwarf.AttrCallFile).(int64)
+						callline, ok2 := tag.Val(dwarf.AttrCallLine).(int64)
+						if ok1 && ok2 {
+							fmt.Printf("callfileidx: %v\n", callfileidx)
+							fmt.Printf("callline: %v\n", callline)
+						}
+					}
+					reader.SkipChildren()
+				}
+				if ok1 {
+					fmt.Print("Ok1 is true")
+				}
+			}
+
+		case dwarf.TagBaseType:
+
+			if name, ok := tag.Val(dwarf.AttrName).(string); ok {
+				fmt.Printf("Base type name: %v\n", name)
+			}
+			reader.SkipChildren()
 
 		default:
 			// Display the human readable name for the DWARF tag
