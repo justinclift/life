@@ -152,6 +152,23 @@ func LoadModule(raw []byte, pool *pgx.ConnPool) (*Module, error) {
 				i++
 			}
 
+		case dwarf.TagSubprogram:
+
+			fmt.Println("In sub program")
+
+			// Grab the Program Counter ranges in this compile unit
+			cuRanges, err = d.Ranges(tag)
+			if err != nil {
+				panic(err)
+			}
+
+			if len(cuRanges) > 0 {
+				fmt.Printf("Number of ranges: %d\n", len(cuRanges))
+				for _, j := range cuRanges {
+					fmt.Printf("  * Low: %v  High: %v\n", j[0], j[1])
+				}
+			}
+
 		default:
 			// Display the human readable name for the DWARF tag
 			fmt.Println(tag.Tag.String())
